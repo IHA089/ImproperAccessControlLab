@@ -1,7 +1,7 @@
 from flask import Flask, request, render_template, session, jsonify, redirect, url_for, flash
 from functools import wraps
 from datetime import datetime
-import sqlite3, hashlib, requests, secrets, logging
+import sqlite3, hashlib, requests, secrets, logging, os
 
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
