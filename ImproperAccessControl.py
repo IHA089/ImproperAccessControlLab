@@ -6,7 +6,7 @@ import sqlite3, hashlib, requests, secrets, logging, os
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
-lab_type = "AccoutTakeover"
+lab_type = "AccountTakeover"
 lab_name = "ImproperAccessControlLab"
 
 ImproperAccessControl = Flask(__name__)
