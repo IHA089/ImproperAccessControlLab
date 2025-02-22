@@ -10,6 +10,7 @@ lab_type = "AccountTakeover"
 lab_name = "ImproperAccessControlLab"
 
 ImproperAccessControl = Flask(__name__)
+ImproperAccessControl.secret_key = "vulnerable_lab_by_IHA089"
 
 def create_database():
     db_path = os.path.join(os.getcwd(), lab_type, lab_name, 'users.db')
