@@ -178,7 +178,6 @@ def join():
 @ImproperAccessControl.route('/reset', methods=['GET'])
 def reset():
     token = request.args.get('token')
-    print(token)
     if not token:
         flash("Token is missing.")
         return redirect(url_for('home'))
@@ -200,11 +199,7 @@ def forgot():
     try:
         data = request.get_json()
         if 'username' in data:
-            username = data['username']
-            if type(data['username']) is list:
-                uname = username[0]
-            else:
-                uname = username
+            uname = data['username']
 
             conn = get_db_connection()
             cursor = conn.cursor()
@@ -233,26 +228,13 @@ def forgot():
                 req_url = request.url.replace("/forgot","")
                 cmplt_url = req_url+"/reset?token="+token
                 bdcontent = "<h2>Reset Your Account password</h2><p>Click the button below to reset your account password on Improper Access Control Lab</p><a href=\""+cmplt_url+"\">Verify Your Account</a><p>If you did not request this, please ignore this email.</p>"
-                mail_server = "http://127.0.0.1:7090/dcb8df93f8885473ad69681e82c423163edca1b13cf2f4c39c1956b4d32b4275"
-                if type(data['username']) is list:
-                    for email in data['username']:
-                        payload = {"email": email,
-                                "sender":"IHA089 Labs",
-                                "subject":"Click bellow link to reset your password",
-                                "bodycontent":bdcontent
-                        }
-                        print(payload)
-                        k = requests.post(mail_server, json = payload)
-                        print(k.text)
-                else:
-                    payload = {"email": data['username'],
-                                "sender":"IHA089 Labs",
-                                "subject":"Click bellow link to reset your password",
-                                "bodycontent":bdcontent
-                        }
-                    print(payload)
-                    k = requests.post(mail_server, json = payload)
-                    print(k.text)
+                mail_server = "https://127.0.0.1:7089/dcb8df93f8885473ad69681e82c423163edca1b13cf2f4c39c1956b4d32b4275"
+                payload = {"email": data['username'],
+                            "sender":"IHA089 Labs",
+                            "subject":"Click bellow link to reset your password",
+                            "bodycontent":bdcontent
+                    }
+                k = requests.post(mail_server, json = payload)
             else:
                 pass
 
