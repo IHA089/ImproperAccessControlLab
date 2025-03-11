@@ -230,7 +230,8 @@ def join():
         return render_template('join.html', error=error_message)
     else:
         try:
-            query = f"INSERT INTO users (gmail, username, password) VALUES ('{email}', '{username}', '{hash_password}')".format(email, username, hash_password)
+            code = generate_code()
+            query = f"INSERT INTO users (gmail, username, password, active, code) VALUES ('{email}', '{username}', '{hash_password}', '0', '{code}')".format(email, username, hash_password, code)
             cursor.execute(query)
             conn.commit()
             username=email
