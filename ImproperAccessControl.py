@@ -12,6 +12,14 @@ lab_name = "ImproperAccessControlLab"
 ImproperAccessControl = Flask(__name__)
 ImproperAccessControl.secret_key = "vulnerable_lab_by_IHA089"
 
+flag_data = {}
+req_res_data = {}
+
+def generate_flag(length=10):
+    charset = string.ascii_letters + string.digits
+    random_string = ''.join(random.choices(charset, k=length))
+    return random_string
+
 def create_database():
     db_path = os.path.join(os.getcwd(), lab_type, lab_name, 'users.db')
     conn = sqlite3.connect(db_path)
@@ -89,6 +97,10 @@ def forgor_password_html():
 def acceptable_html():
     return render_template('acceptable.html', user=session.get('user'))
 
+@ImproperAccessControl.route('/check.html')
+def check_html():
+    return render_template('check.html')
+
 @ImproperAccessControl.route('/term.html')
 def term_html():
     return render_template('term.html', user=session.get('user'))
@@ -127,6 +139,25 @@ def confirm():
     conn.close()
     error_message = "Invalid code"
     return render_template('confirm.html', error=error_message, username=username, password=password)
+
+@ImproperAccessControl.route('/check', methods=['POST'])
+def check():
+    username = request.form.get('username')
+    sessioncode = request.form.get('sessioncode')
+    if username in flag_data:
+        if flag_data[username] == sessioncode:
+            if username in req_res_data:
+                if req_res_data[username] == 2:
+                    return render_template('success.html', user=username)
+                else:
+                    return render_template('check.html', error="username and sessioncode is currect but you don't exploit vulnerability")
+            else:
+                return render_template('check.html', error="please exploit vulnerability")
+        else:
+            return render_template('check.html', error="wrong session code")
+    else:
+        return render_template('check.html', error="user not found")
+
 
 @ImproperAccessControl.route('/resend', methods=['POST'])
 def resend():
@@ -192,6 +223,8 @@ def resetpassword():
     result = cursor.fetchone()
     conn.close()
     if result:
+        gmail = result[0]
+        req_res_data[gmail] = req_res_data[gmail]+1
         conn = get_db_connection()
         cursor = conn.cursor()
         hash_password = hashlib.md5(password.encode()).hexdigest()
@@ -267,6 +300,8 @@ def reset():
     result = cursor.fetchone()
     conn.close()
     if result:
+        mail = result[0]
+        req_res_data[mail] = req_res_data[mail]+1
         return render_template('reset-password.html', token=token)
     else:
         flash("Invalid token. Please try again.")
@@ -308,6 +343,8 @@ def forgot():
                 username = username.replace(" ", "")
                 req_url = request.url.replace("/forgot","")
                 cmplt_url = req_url+"/reset?token="+token
+                if "iha089-labs.in" not in req_url:
+                    req_res_data[username]=0
                 bdcontent = "<h2>Reset Your Account password</h2><p>Click the button below to reset your account password on Improper Access Control Lab</p><a href=\""+cmplt_url+"\">Verify Your Account</a><p>If you did not request this, please ignore this email.</p>"
                 mail_server = "https://127.0.0.1:7089/dcb8df93f8885473ad69681e82c423163edca1b13cf2f4c39c1956b4d32b4275"
                 payload = {"email": username,
@@ -332,11 +369,14 @@ def forgot():
 def dashboard():
     if 'user' not in session:
         return redirect(url_for('login_html'))
-    admin_list=['admin', 'administrator', 'admin@iha089.org']
-    if session.get('user') in admin_list:
-        return render_template('admin-dashboard.html', user=session.get('user'))
+    
+    username = session.get('user')
+    if username not in flag_data:
+        flag_data[username] = generate_flag()
 
-    return render_template('dashboard.html', user=session.get('user'))
+    flag_code = flag_data[username]
+
+    return render_template('dashboard.html', user=session.get('user'), flag=flag_code)
 
 @ImproperAccessControl.route('/logout.html')
 def logout():
@@ -349,6 +389,7 @@ def logout():
 def profile():
     if 'user' not in session:
         return redirect(url_for('login_html'))
+
     return render_template('profile.html', user=session.get('user'))
 
 
