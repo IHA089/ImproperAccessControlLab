@@ -1,10 +1,12 @@
 from flask import Flask, request, render_template, session, jsonify, redirect, url_for, flash
 from functools import wraps
 from datetime import datetime
-import sqlite3, hashlib, requests, secrets, logging, os, random, string
+import sqlite3, hashlib, requests, secrets, logging, os, random, string, urllib3
 
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 lab_type = "AccountTakeover"
 lab_name = "ImproperAccessControlLab"
@@ -179,7 +181,7 @@ def resend():
                     "bodycontent":bdcontent
                 }
         try:
-            k = requests.post(mail_server, json = payload)
+            k = requests.post(mail_server, json = payload, verify=False)
         except:
             return jsonify({"error": "Mail server is not responding"}), 500
         error_message="code sent"
@@ -277,7 +279,7 @@ def join():
                         "bodycontent":bdcontent
                     }
             try:
-                k = requests.post(mail_server, json = payload)
+                k = requests.post(mail_server, json = payload, verify=False)
             except:
                 return jsonify({"error": "Mail server is not responding"}), 500
 
@@ -352,7 +354,7 @@ def forgot():
                             "subject":"ImproperAccessControlLab::Click bellow link to reset your password",
                             "bodycontent":bdcontent
                     }
-                k = requests.post(mail_server, json = payload)
+                k = requests.post(mail_server, json = payload, verify=False)
             else:
                 pass
 
